@@ -195,14 +195,7 @@ python manage.py routes --format json | jq '.[0]'
 
 ## Contributing
 
-```bash
-git clone https://github.com/shibinshibii/drf-routes
-cd drf-routes
-pip install -e ".[dev]"
-pytest
-```
-
-PRs welcome. Please add tests for any new behaviour.
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide — setup, branch naming, commit style, PR checklist, and how to report bugs.
 
 ---
 
