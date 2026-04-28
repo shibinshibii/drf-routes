@@ -196,7 +196,7 @@ python manage.py routes --format json | jq '.[0]'
 ## Contributing
 
 ```bash
-git clone https://github.com/yourusername/drf-routes
+git clone https://github.com/shibinshibii/drf-routes
 cd drf-routes
 pip install -e ".[dev]"
 pytest

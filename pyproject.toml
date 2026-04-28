@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "drf-routes"
 version = "0.1.0"
 description = "A management command to list all Django REST Framework routes — like `rails routes` for Django."
-authors = [{ name = "Your Name", email = "you@example.com" }]
+authors = [{ name = "Shibin", email = "shibi393493@gmail.com" }]
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.9"
@@ -38,9 +38,9 @@ pretty = ["rich>=13.0"]
 dev = ["pytest", "pytest-django", "rich>=13.0"]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/drf-routes"
-Repository = "https://github.com/yourusername/drf-routes"
-Issues = "https://github.com/yourusername/drf-routes/issues"
+Homepage = "https://github.com/shibinshibii/drf-routes"
+Repository = "https://github.com/shibinshibii/drf-routes"
+Issues = "https://github.com/shibinshibii/drf-routes/issues"
 
 [tool.setuptools.packages.find]
 include = ["drf_routes*"]
