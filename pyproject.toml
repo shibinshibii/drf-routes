@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "drf-routes"
+version = "0.1.0"
+description = "A management command to list all Django REST Framework routes — like `rails routes` for Django."
+authors = [{ name = "Your Name", email = "you@example.com" }]
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+keywords = ["django", "drf", "djangorestframework", "routes", "developer-tools"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: Django",
+    "Framework :: Django :: 3.2",
+    "Framework :: Django :: 4.0",
+    "Framework :: Django :: 4.1",
+    "Framework :: Django :: 4.2",
+    "Framework :: Django :: 5.0",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "Django>=3.2",
+    "djangorestframework>=3.12",
+]
+
+[project.optional-dependencies]
+pretty = ["rich>=13.0"]
+dev = ["pytest", "pytest-django", "rich>=13.0"]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/drf-routes"
+Repository = "https://github.com/yourusername/drf-routes"
+Issues = "https://github.com/yourusername/drf-routes/issues"
+
+[tool.setuptools.packages.find]
+include = ["drf_routes*"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "tests.settings"
+python_files = ["test_*.py"]
