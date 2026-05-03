@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "drf-routes"
-version = "0.1.0"
+version = "0.1.1"
 description = "A management command to list all Django REST Framework routes — like `rails routes` for Django."
 authors = [{ name = "Shibin", email = "shibi393493@gmail.com" }]
 readme = "README.md"

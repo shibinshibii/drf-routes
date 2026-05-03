@@ -58,6 +58,13 @@ def _badge_list(items: list[str], prefix: str = "") -> str:
     return "  ".join(f"`{prefix}{i}`" for i in items)
 
 
+def _esc(text: Any) -> str:
+    """Escape pipe characters for Markdown tables."""
+    if text is None:
+        return ""
+    return str(text).replace("|", "\\|")
+
+
 def _slug(text: str) -> str:
     """Convert text to a GitHub-compatible anchor slug."""
     return re.sub(r"[^a-z0-9-]", "-", text.lower()).strip("-")
@@ -202,12 +209,128 @@ def _render_endpoint(r: RouteInfo, app_label: str) -> str:
             lines.append(f"| {label} | {value} |")
         lines.append("")
 
+    # Permissions / Access Control
+    permissions_detailed = extra.get("permissions_detailed", [])
+    if permissions_detailed:
+        lines.append("**Access Control**")
+        lines.append("")
+        for p in permissions_detailed:
+            lines.append(f"- **`{p['name']}`**")
+            if p.get("doc"):
+                first_line = p["doc"].split("\n")[0]
+                lines.append(f"  - _{_esc(first_line)}_")
+            if p.get("logic"):
+                lines.append("  <details>")
+                lines.append("  <summary>View Permission Logic</summary>")
+                lines.append("")
+                lines.append("  ```python")
+                lines.append(f"  {p['logic']}")
+                lines.append("  ```")
+                lines.append("  </details>")
+        lines.append("")
+
+    # Serializer fields
+    serializer_fields = extra.get("serializer_fields", [])
+    if serializer_fields:
+        lines.append("**Request Schema**")
+        lines.append("")
+        lines.append("| Field | Type | Required | Notes |")
+        lines.append("|-------|------|----------|-------|")
+        for f in serializer_fields:
+            name = f"**{_esc(f['name'])}**" if f['required'] else _esc(f['name'])
+            ftype = _esc(f['type'].replace("Field", ""))
+            required = "✅" if f['required'] else "❌"
+
+            notes = []
+            if f.get('read_only'): notes.append("_read-only_")
+            if f.get('help_text'): notes.append(_esc(f['help_text']))
+
+            validations = []
+            if f.get('min_value') is not None: validations.append(f"min: {f['min_value']}")
+            if f.get('max_value') is not None: validations.append(f"max: {f['max_value']}")
+            if f.get('min_length') is not None: validations.append(f"min_len: {f['min_length']}")
+            if f.get('max_length') is not None: validations.append(f"max_len: {f['max_length']}")
+            if f.get('choices'):
+                choices_list = f['choices']
+                choices_str = ", ".join(map(str, choices_list[:5]))
+                if len(choices_list) > 5:
+                    choices_str += "..."
+                validations.append(f"choices: [{_esc(choices_str)}]")
+
+            if validations:
+                notes.append(f"({'; '.join(validations)})")
+
+            notes_str = " ".join(notes) if notes else "—"
+            lines.append(f"| {name} | `{ftype}` | {required} | {notes_str} |")
+        lines.append("")
+
+    # Query Parameters
+    query_params = extra.get("query_params", [])
+    if query_params and "GET" in r.http_methods:
+        lines.append("**Query Parameters**")
+        lines.append("")
+        lines.append("| Parameter | Type | Description |")
+        lines.append("|-----------|------|-------------|")
+        for p in query_params:
+            lines.append(f"| `{_esc(p['name'])}` | `{_esc(p['type'])}` | {_esc(p['description'])} |")
+        lines.append("")
+
+    # Response Examples
+    example = extra.get("response_example")
+    is_list = extra.get("is_list_view", False)
+    pagination_cls = extra.get("pagination_class")
+
+    if example is not None:
+        import json
+        lines.append("**Response Examples**")
+        lines.append("")
+        lines.append("Success `200 OK` / `201 Created`")
+        lines.append("```json")
+        if is_list:
+            if pagination_cls:
+                # Wrap in standard DRF pagination structure
+                paginated = {
+                    "count": 1,
+                    "next": None,
+                    "previous": None,
+                    "results": [example]
+                }
+                lines.append(json.dumps(paginated, indent=2))
+            else:
+                lines.append(json.dumps([example], indent=2))
+        else:
+            lines.append(json.dumps(example, indent=2))
+        lines.append("```")
+        lines.append("")
+
+    # Common Error states (always relevant for DRF)
+    lines.append("<details>")
+    lines.append("<summary>🚩 Common Error States</summary>")
+    lines.append("")
+    lines.append("`400 Bad Request` (Validation Error)")
+    lines.append("```json")
+    lines.append("{\n  \"field_name\": [\"This field is required.\"],\n  \"non_field_errors\": [\"General error message.\"]\n}")
+    lines.append("```")
+    lines.append("")
+    lines.append("`401 Unauthorized` / `403 Forbidden` (Permission Error)")
+    lines.append("```json")
+    lines.append("{\n  \"detail\": \"Authentication credentials were not provided.\"\n}")
+    lines.append("```")
+    lines.append("")
+    lines.append("</details>")
+    lines.append("")
+
     # Docstring
     if doc:
         newline_replacement = "  \n> "
         lines.append("**Description**")
         lines.append("")
         lines.append(f"> {doc.replace(chr(10), newline_replacement)}")
+        lines.append("")
+    else:
+        lines.append("**Description**")
+        lines.append("")
+        lines.append("> _No description provided._")
         lines.append("")
 
     return "\n".join(lines)
@@ -245,10 +368,10 @@ def _render_appendix(routes: list[RouteInfo]) -> str:
     ]
     for r in routes:
         methods    = " ".join(r.http_methods) if r.http_methods else "—"
-        serializer = r.serializer_class or "—"
-        app        = r.app_name or "—"
-        name       = r.name or "—"
-        lines.append(f"| `{r.url}` | {methods} | `{r.view_name}` | `{serializer}` | {app} | {name} |")
+        serializer = _esc(r.serializer_class) or "—"
+        app        = _esc(r.app_name) or "—"
+        name       = _esc(r.name) or "—"
+        lines.append(f"| `{_esc(r.url)}` | {methods} | `{_esc(r.view_name)}` | `{serializer}` | {app} | {name} |")
     return "\n".join(lines)
 
 

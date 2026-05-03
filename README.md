@@ -103,13 +103,13 @@ Running `--format markdown` produces a complete `api_docs.md` with:
 - **Table of contents** — per app, per endpoint with anchor links  
 - **Per-endpoint sections** including:
   - Method badges (🟢 `GET`, 🔵 `POST`, 🔴 `DELETE`, etc.)
+  - **Request Schema** — Detailed field types, required status, and validation rules (min/max, choices).
+  - **Query Parameters** — Search, ordering, filtering (`filterset_fields`/`class`), and pagination controls.
+  - **Response Examples** — Mock JSON payloads for success and collapsible sections for common error states (400, 401, 403).
+  - **Access Control** — Summaries and source code logic for custom permissions.
   - Path parameters table (`{id}`, `{pk}`, etc.)
-  - Serializer class
-  - Permission classes
-  - Authentication classes
-  - Filter backends, search fields, ordering fields
-  - Pagination class
-  - Docstring (extracted from the view class)
+  - Authentication classes & Filter backends
+  - Docstring (extracted from the view class, skipping generic framework boilerplate)
 - **Appendix** — flat table of all routes
 
 All metadata is extracted **automatically** from your existing views. **Zero annotations needed.**
@@ -200,12 +200,16 @@ python manage.py routes --no-color
 
 ## 🔍 What It Detects
 
-| View type | Methods | Serializer | Permissions | Filters |
-|---|---|---|---|---|
-| DRF `ViewSet` / `ModelViewSet` | ✅ From router actions | ✅ `serializer_class` | ✅ | ✅ |
-| DRF `APIView` | ✅ From defined handlers | ✅ `serializer_class` | ✅ | ✅ |
-| Django CBV | ✅ From `http_method_names` | — | — | — |
-| Django FBV | — | — | — | — |
+| Feature | DRF `ViewSet` | DRF `APIView` | Django Views |
+|---|---|---|---|
+| **Methods** | ✅ Automatic | ✅ From handlers | ✅ `http_method_names` |
+| **Serializers** | ✅ `serializer_class` | ✅ **Smart discovery** | — |
+| **Request Schema** | ✅ Field-level | ✅ Field-level | — |
+| **Permissions** | ✅ **With logic** | ✅ **With logic** | — |
+| **Filters/Query** | ✅ Extensive | ✅ Extensive | — |
+| **Examples** | ✅ Mock JSON | ✅ Mock JSON | — |
+
+**Smart Discovery for APIView:** Even if you don't use `serializer_class` (common in raw `APIView` subclasses), `drf-routes` will statically analyze your `post`/`put`/`patch` methods to find used serializers and document their fields automatically.
 
 ---
 
