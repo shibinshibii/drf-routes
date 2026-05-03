@@ -300,6 +300,8 @@ def _generate_mock_data(serializer_cls: type, depth: int = 0) -> Any:
         return mock_obj
     except Exception:
         return {}
+
+def _get_view_name(view: Any, cls: Optional[type]) -> str:
     """Return a human-readable view name."""
     if cls:
         return cls.__name__
